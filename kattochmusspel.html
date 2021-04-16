@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Document</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body>
+    <script src="http://koda.nu/simple.js">
+    // skapar variabler och konsatnter 
+      const menuPic = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAARElEQVRYR+3UwQkAMAgEMN1/6PYt9CsKjQOoBM+M4crh+WEBAi+B03yYZaYFVgo0n0BtL4YrBfwBAv4AASkgIAUE/hK48X0MIWg1Dt0AAAAASUVORK5CYII="; // Skapar bilden som man ser i det vänstra hörnet med 3 sträck
+      const backgroundMusic = "https://vgmsite.com/soundtracks/super-mario-bros/khbnvkqp/01%20-%20Super%20Mario%20Bros.mp3"; // bakgrundsmusik från Mario
+      const backgroundMusic2 = "http://spelprogrammering.nu/ljud/musik/Arkanoid_PSID_01.mp3"; // Ifall man villändra musiken kan man ändra den till Arkanoid
+      const peachFallingMusic = "https://www.soundjay.com/human/woman-scream-01.mp3";       // Ett ljud som spelas när Mario dör 
+      const marioPic = "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/1ee98192-8df8-4a5e-b420-a7da5a20bddb/d5im1a0-25723a1a-af28-411b-ad33-beb1db87075d.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOiIsImlzcyI6InVybjphcHA6Iiwib2JqIjpbW3sicGF0aCI6IlwvZlwvMWVlOTgxOTItOGRmOC00YTVlLWI0MjAtYTdkYTVhMjBiZGRiXC9kNWltMWEwLTI1NzIzYTFhLWFmMjgtNDExYi1hZDMzLWJlYjFkYjg3MDc1ZC5wbmcifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6ZmlsZS5kb3dubG9hZCJdfQ.CA3niz90U1uTiXP-ONpn_TtJcIZX1uvCJXgUTdScxUQ"; // En bild på mario
+      const peachPic = "https://i.pinimg.com/originals/62/24/9f/62249f6e72d6f8d52d4a2864c18b4d2b.png"; // Bild på peach
+      const zombiePic = "https://static.wikia.nocookie.net/minecraft-earth/images/1/1f/Zombo.png/revision/latest/scale-to-width-down/256?cb=20191114033310";  // bild på zombie
+      const bowserPic = "https://tiermaker.com/images/templates/3548861588052194.png";    // bild på bowser
+      const grassPic = "https://t3.ftcdn.net/jpg/02/32/81/94/360_F_232819464_VHedOPkRpeQPGtbwXiS4xB2lBQO92B1O.jpg"; // bild på gräset i bakgrunden
+      const housePic = "https://thepapermarioproject.files.wordpress.com/2013/03/marios-house-exterior-1.png?w=300";    // bild på Marios hus
+      const castlePic = "http://www.spore.com/static/image/500/581/908/500581908203_lrg.png";   // bild på slottet
+      var xMax = canvas.width - 250;    // Övre vänstra hörnet på bilderna är position, så gör spelplanen mindre än utrymmet
+      var yMax = canvas.height - 250;   // HUr långt ner på canvasen som spelet använder men obs spelet ritar utanför detta p.ga man anger figurernas övre vänstar hörn så man ritar uanför detta
+      var lowSpeed = xMax / 256;        // Sätt hastigheten så det tar samma tid att gå över hela planen
+      var highSpeed = lowSpeed * 3;      // Den snabbar farten
+      var speed = lowSpeed;             // Sätt den orginella fart
+      var xMin = 0;                     // vänster marginal där spelet börjar på canvasen som är 0 för att ta upp hela ytan
+      var zombie    = {x: xMin, y: 0};  // Spelarnas position
+      var mario     = {x: xMax, y: yMax};         // start positionen på mario  
+      var peach     = {x: xMax + 50, y: -100};    // start positionen på peach
+      var house     = {x: xMin, y: yMax};   // posititonen på huset
+      var havePeach = 0;                // nollställer variabler
+      var peachAnimation = 0;           // Talar om man är i Peach animering eller inte 0 = 1 = ja
+      var menuSts = 0;                   // talar om vilket menyval du har gjort
+      var menuMax = 32;                 // Menu area yMax
+      var bowserMode = 0;               // Talar om man är i bowser mode, 1 ifall man vill visa bowser 0 ifall man vill visa zombue
+      var preventMoves = 0;             // Figuerna ska inte röra på sig när spelet har avslutats
+      var soundMode = 1;                // 0 = ljudlöst, 1 = mario bakgrundsljud, 2 = arkanoidljud.
+
+        /* Rita menyval längst upp till vänster och aktivera det menyval musen är på
+            txt     Texten för menyvalet
+            itemNo  Menyvalets nummer från 1 och uppåt */
+      function menuItemActive(txt, itemNo) {
+          const textSize = 16;    // text storleken på menyn ska vara 16 px
+          const lineSpacing = 25; // höjden på menyn ska vara 25 px
+          if ((mouse.y >= (itemNo - 1) * lineSpacing + 35) && (mouse.y < (itemNo) * lineSpacing + 35)) { // Om musen inom angivet menyval så rita ut det valt
+              rectangle(0, 32 + (itemNo - 1) * lineSpacing, 140, lineSpacing + 5, "red");   // ritar en rectangel som är menyns bakgrundsfärg
+              rectangle(0 + 1, 32 + (itemNo - 1) * lineSpacing + 1, 140 - 2, lineSpacing + 5 - 2, "blue");    // ritar en till rectangel som är lite mindre ovan på den förra rectangeln så den föregående blir som en linje
+              text(5, 50 + (itemNo - 1) * lineSpacing, textSize, txt, "orange"); // skirver menytexten
+              menuSts = itemNo;     // Lagra som senaste aktiva menyval i global variabel
+          } else {   // Annars när menyvalet inte är valt
+              rectangle(0, 32 + (itemNo - 1) * lineSpacing, 140, lineSpacing + 5, "white"); //  ritar en vit meny bakgrund
+              text(5, 50 + (itemNo - 1) * lineSpacing, textSize, txt, "black"); // ritar en svart menytext
+          }
+          if ((itemNo * lineSpacing + 35) > menuMax) {   // Sätt global variabel för maximal träffyta för meny
+              menuMax = itemNo * lineSpacing + 35;       // räknar ut det y-värde där menyn sträcker sig och lagrar det i menymax
+          }
+      }
+
+      preloadSound(peachFallingMusic);   // Spelar upp musiken från där den stannade
+      loopSound(backgroundMusic, 0.5);  // Gör så att musiken alldrig kommer stanna utan kommer loopas runt
+
+      /* Skärmuppdatering */
+      function update() {
+        clearScreen();
+
+        /* Rita bakgrund */
+        var grassX;
+        var grassY;
+
+        for (grassX = xMin; grassX < xMax + 250; grassX += 500) {   // täcker Hela spelplanen täcks av gräset
+          for (grassY = 0; grassY < yMax + 250; grassY += 300) {
+            picture(grassX, grassY, grassPic);
+          }
+        }
+
+        /* Skriv hjälptext, men bara när de är i sina startpositioner */
+
+        var both = 0;
+        if ((mario.x == xMax) && (mario.y == yMax)) {   // Ifall Mario står på sin startposition ska den stå en hjälp text på skärmen
+          text(xMax / 2 - 350, (yMax + 250) / 2 - 30, 20, "Mario - rädda Peach från slottet till huset (pil-tangenter)", "blue");
+          both++;
+        }
+        if ((zombie.x == xMin) && (zombie.y == 0)) {   // När Zombisen stå på sin startposition ska det stå en hjälp text på skärmen
+          text(xMax / 2 - 150, (yMax + 250) / 2, 20, "Zombie - fånga Mario (w,a,s,z)", "blue");
+          both++;
+        }
+        if (both == 2) {    // Visa enbart om båda i startpos
+            text(xMax / 2 - 230, (yMax + 250) / 2 + 30, 20, "Mer hjälp finns i menyn upp till vänster!", "blue");  // När båda karaktärerna står på sin startposition ska även detta komma upp på skärmen
+        }
+
+        /* Rita Peach, slott och hus*/
+        picture(house.x, house.y, housePic);    // Ritar husetoch 
+        picture(peach.x, peach.y, peachPic);    // ritar ut Peach
+        picture(xMax, 0, castlePic);              
+
+        if (!preventMoves) {
+          /* Flytta Mario med pil tangenterna */
+          if (keyboard.up) {  // När man trycker uppåt går Mario uppåt
+            mario.y -=speed;
+          }
+          if (keyboard.right) { // När man trycker höger går mario åt höger
+            mario.x +=speed;
+          }
+          if (keyboard.left) {  // När man trycker vänster går mario åt vänster
+            mario.x -=speed;
+          }
+          if (keyboard.down) {  // När man trycker neråt går mario neråt
+            mario.y +=speed;
+          }
+          
+          /* Flytta Zombie */
+          if (keyboard.w) { // När man trycker w går zombie uppåt
+            zombie.y -=speed;
+          }
+          if (keyboard.z) { // När man trycker z går zombie neråt
+            zombie.y +=speed;
+          }
+          if (keyboard.a) { // När man trycker a går zombie vänster
+            zombie.x -=speed;
+          }
+          if (keyboard.s) {   // När man trycker s går zombie höger
+            zombie.x +=speed;
+          }
+        }
+        
+        /* Byt hastighet med mellanslag (mycket dubbelslag)*/
+        if (keyboard.space){
+          if (speed == highSpeed) {   // När man  trycker space-kanppen går karaktärerna tre gånger så snabbt
+            speed = lowSpeed;         // När den är på snabbt läge och trycker på space-knappen ska den gå långsamt
+          } else {
+            speed = highSpeed;        
+          }
+        }
+
+        /* Sätt gränser för spelplanen */
+        /* X och Y får inte understiga xMin resp 0 */
+        if (mario.x < xMin){   // Ifall mario går för mycket åt vänster stoppas den på kanten av skärmen
+          mario.x = xMin;     // Annars kommer den stannas på kanten av skärmen
+        }
+        if (zombie.x < xMin){      // Ifall Zombie går för mycket åt vänster stoppas den på kanten av skärmen
+          zombie.x = xMin;        // Ifall zombie går för mycket åt vänster stoppas den på kanten av skärmen
+        }
+        if (mario.y < 0){        // Mario kan inte överstiga 0 på y axeln annars stoppas den på kanten av skärmen 
+          mario.y = 0;
+        }
+        if (zombie.y < 0){      // Zombie kan inte gå högra än 0 på y-axeln
+          zombie.y = 0;         // då stoppas den 
+        }
+
+        /* X och Y får inte överstiga xMax resp yMax */
+        if (mario.x > xMax){      // Ifall mario går för mycket åt höger upp stoppas den på kanten av skärmen
+          mario.x = xMax; 
+        }
+        if (zombie.x > xMax){    // Ifall zombie går för mycket åt höger den på kanten av skärmen
+          zombie.x = xMax;
+        }
+        if (mario.y > yMax){    // Mario kan inte gå lägre än xMAx
+          mario.y = yMax;
+        }
+        if (zombie.y > yMax){ // zombien kan inte gå lägra än xmax
+          zombie.y = yMax;
+        }
+
+        /* Zombie får ej gå in i huset */
+        if ((zombie.x < 200) && (zombie.y > yMax - 200)) {      // Zombisen måste hålla sig med ett avstånd från huset
+          zombie.x = 200;                                       // Om den försöker gå in i huset stoppas den
+          zombie.y = yMax - 200;
+        }
+
+        /* Rita ut figurerna */
+        if (bowserMode) {                               // ifall man väljer att ha bowser istället för zombisen 
+            picture(zombie.x, zombie.y, bowserPic);     // Ska man byta ut zombisen med bowser billden
+        } else {
+            picture(zombie.x, zombie.y, zombiePic);
+        }
+        picture(mario.x, mario.y, marioPic);
+
+        if ((havePeach) && (!peachAnimation)) { // Om hämtat Peach så kläng fast på ryggen
+          peach.x = mario.x;
+          peach.y = mario.y - 100;
+        }
+
+        /* Räkna ut avståndet */
+        var distZombie = distance(zombie, mario);   // Sätter in en variabel som är avståndet mellan zombbie och mario
+        var distCastle = distance(xMax, 0, mario.x, mario.y);     // sätteR in en variabel vilket är avståndet mellan slottet och mario
+        var distHome = distance(xMin, yMax, mario.x, mario.y);    // sätteR in en variabel vilket är avståndet mellan hemmet och mario
+        var distZombieCastle = distance(xMax, 0, zombie.x, zombie.y);   // sätteR in en variabel vilket är avståndet mellan slottet och zombisen
+
+        if (distCastle < 40) { // Hämtat Peach
+          havePeach = 1     // Betyder att Mario har peach från slottet
+        }
+
+        if ((distZombie < 80) || ((distZombieCastle < 40) && (!havePeach))) { // Fångad av Zombie, förlorade 
+//        stopSound(backgroundMusic); // När mario har förlorat ska musiken stanna 
+          playSound(peachFallingMusic);   // När mario dör ska Peach börja gråta
+          peachAnimation = 1;             // PEachAnimation är en animation när Peach faller ner till marken som ska spelas när Mario dör. 
+        }
+
+        if (peachAnimation) { // Utför animation
+          if (peach.y < yMax + 200) { // Kör animation 200px nedanför ytan
+            peach.y += lowSpeed;    // Hur snabbt Peach ska falla ner när Mario dör
+            picture(peach.x, peach.y, peachPic);
+          } else { // Avsluta spelet och städa upp
+            stopSound(peachFallingMusic);   
+            text(xMax / 2 - 100, (yMax + 250) / 2 + 70, 50, "Game over!", "red");   // När animationen har slutats kommer det upp en rödtext där det står game over
+            stopSound(backgroundMusic);     // Bakgrudenmusiken ska stoppas
+          }
+        }
+
+        if ((havePeach) && (distHome < 40)) { // Mario har vunnit
+          text(xMax / 2 - 180, (yMax + 250) / 2 + 70, 50, "Grattis Mario!", "#DD6600");   // När Mario har vunnit ska det komma up en röd text 
+          stopSound(backgroundMusic);
+          preventMoves = 1;   // Gubbarna ska stå still när spelet är avslutat
+        } 
+
+        /* Rita meny */
+        if (mouse.left) {     // När man vänstertrcyker på menyn
+            if ((mouse.x < 32) && (mouse.y < 32)) {     // Aktivera meny
+                menuSts = 255;                          // Dummy värde  != 0
+            }
+            if (menuSts) {                              // Rensa bakgrund menuSts talar om vad du har tryckt på menyn
+                rectangle(0, 0, 32, 32, "white")        // skapar rektangeln och skapar bakrunden till menyn
+            }
+            if ((menuSts) && (mouse.x < 140) && (mouse.y < menuMax)) {   //  
+                menuItemActive("Hjälp", 1);   // skapar menyvalet och en 1:a som är menyvalets identitet 
+                if (bowserMode) {             // Om man väljer bowswer före zombien
+                    menuItemActive("Zombie", 2);// skapar ett meny val som har identiteten 2
+                } else {
+                    menuItemActive("Bowser", 2);  // ifall man har zombisen ska det istället stå bowser istället för zombie 
+                }
+                menuItemActive("Börja om", 3);    // skapar ett meny val med identitetenm 3 då man kan starta om spelet
+                menuItemActive("Avsluta", 4);     // skapar ett menyval med identitetem 4 då man kan avsluta spelet
+                menuItemActive("Byt ljud", 5);    // skapar ett meny val med identiten 5 då man kan byta ljud eller stänga av ljudet 
+           }
+        } else {
+            if ((mouse.x < 140) && (mouse.y < menuMax)) { // Musknapp släppt inom menyområdet
+                switch(menuSts) {     // gör olika saker beroende vad man har klickat i menyn
+                    case 1 : // ifall man klickar på hjälp:
+                        alert("Mario skall rädda Peach från slottet till sitt hem.  Zombie försöker ta Peach eller Mario.  Mario går med piltangenterna och Zombie med tangenterna w, a, s och z.  Tryck på mellanslag för att ändra farten. Lycka till!") // det ska mkomma upp en text när man trycker på hjälp
+                        break; 
+                    case 2 : // Ifall man väljer Bowser
+                        if (bowserMode) {   
+                            bowserMode = 0;  // Zombisen ska synas
+                        } else {
+                            bowserMode = 1;   // annars ska bowser synas
+                        }
+                        break;
+                    case 3 : // Starta om
+                        location.reload(); // När man väljer att starta om ska kraktärerna återgå till sina startpositioner
+                        break;
+                    case 4 : // Avsluta
+                        stopSound(backgroundMusic);   // ifall maN VÄLJER att avsluta spelet
+                        text(xMax / 2 - 210, (yMax + 250) / 2 + 80, 50, "Spelet avslutat!", "#DD6600");   // ska det komma upp en röd text 
+                        stopUpdate(); // Eftersom du har avslutat spelet ska inte updaten fprtsätta
+                        break;
+                    case 5 : // Ändra bakgrundsmusik
+                        if (soundMode == 0) {   // om det är ljudlöst
+                            soundMode = 1;      // ska det spelas Mariomusiken när man trycker på ändra ljud 
+                            loopSound(backgroundMusic); // Den ska looppa soundet eftersom då när sången har avs´lutats spelas dem om igen
+                        } else if (soundMode == 1) {    // Ifal man har Mariom bakgrundsmusiken
+                          soundMode = 2;                // ska man byta till Arkanoid musiken när man trycke rpå but ljud
+                          stopSound(backgroundMusic);   // Mariomusiken ska stoppas eftersom annars skulle man spe,a båda mario och Arkanoidljudet
+                          loopSound(backgroundMusic2);    // loopar ljudet
+                        } else {
+                          soundMode = 0;              // Ifal man har på arkanoid musiken och trycker på byt ljud ska det bli ljudlöst
+                          stopSound(backgroundMusic2);    // sluta spela arkaoidmusiken
+                        }
+                        break;
+                }
+            }
+            menuSts = 0; // När programmet har utfört det som användaren valt så nollställs menusts eftersom annars skulle programmet loopa runt menyvale
+        }
+        picture(0, 0, menuPic);   // ritar symbolen på menyn vilket är den 3 stäcken
+      }
+    </script>
+  </body>
+</html>
+
